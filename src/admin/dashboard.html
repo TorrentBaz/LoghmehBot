@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Loghmeh | مدیریت</title>
+  <style>
+    :root { color-scheme: dark; --bg:#101114; --card:#1a1c22; --line:#2d303a; --ink:#f2f4f8; --muted:#a8afbd; --accent:#b7ee59; --danger:#ff8079; }
+    * { box-sizing:border-box } body { margin:0; background:var(--bg); color:var(--ink); font:15px Vazirmatn, Tahoma, sans-serif; }
+    main { width:min(1080px, calc(100% - 32px)); margin:42px auto 80px; } h1 { margin:0 0 6px; font-size:31px } h2 { font-size:19px; margin:0 0 18px } p { color:var(--muted); line-height:1.8 }
+    .top { display:flex; justify-content:space-between; gap:16px; align-items:flex-start; margin-bottom:28px } .brand { color:var(--accent) } .grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:26px }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:15px; padding:17px } .metric { font-size:25px; font-weight:700; margin-top:7px } .muted { color:var(--muted); font-size:13px }
+    .section { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:22px; margin-top:16px } .split { display:grid; grid-template-columns:1fr 1.35fr; gap:16px }
+    form { display:grid; gap:10px } input, select, textarea { width:100%; color:var(--ink); background:#111318; border:1px solid #3a3e49; border-radius:10px; padding:11px; font:inherit } textarea { min-height:72px; resize:vertical }
+    button { border:0; border-radius:10px; padding:10px 14px; background:var(--accent); color:#182000; font-weight:700; cursor:pointer; font:inherit } button.outline { background:transparent; color:var(--ink); border:1px solid var(--line) } button.danger { color:var(--danger) }
+    table { width:100%; border-collapse:collapse; font-size:13px } th,td { padding:12px 8px; text-align:right; border-bottom:1px solid var(--line) } th { color:var(--muted); font-weight:500 } .active { color:var(--accent) } .inactive { color:var(--muted) }
+    #login { position:fixed; inset:0; display:grid; place-items:center; background:#101114ee; z-index:5 } #login .card { width:min(390px, calc(100% - 36px)) } #notice { min-height:22px; color:var(--danger); font-size:13px }
+    @media (max-width:760px) { main { margin-top:24px }.grid { grid-template-columns:repeat(2,1fr) }.split { grid-template-columns:1fr }.top { display:block } }
+  </style>
+</head>
+<body>
+  <div id="login"><div class="card"><h2>ورود به مدیریت Loghmeh</h2><p>توکن `ADMIN_API_TOKEN` را وارد کن. این توکن فقط در همین مرورگر نگه داشته می‌شود.</p><form id="login-form"><input id="token" type="password" placeholder="ADMIN_API_TOKEN" autocomplete="current-password" required><button>ورود</button><span id="notice"></span></form></div></div>
+  <main>
+    <div class="top"><div><h1><span class="brand">Loghmeh</span> / مدیریت</h1><p>فروش، سفارش‌ها و سرویس‌ها در یک نمای ساده.</p></div><button class="outline" id="logout">خروج</button></div>
+    <section class="grid" id="metrics"><div class="card"><div class="muted">سرویس فعال</div><div class="metric" data-metric="active_offerings">—</div></div><div class="card"><div class="muted">در انتظار پرداخت</div><div class="metric" data-metric="orders_awaiting_payment">—</div></div><div class="card"><div class="muted">نیازمند بررسی</div><div class="metric" data-metric="jobs_needing_attention">—</div></div><div class="card"><div class="muted">فروش امروز (ریال)</div><div class="metric" data-metric="paid_today_rial">—</div></div></section>
+    <section class="split"><div class="section"><h2>سرویس جدید</h2><form id="offering-form"><input name="code" placeholder="کد یکتا؛ مثل premium-3m" required><select name="kind"><option value="telegram_premium">Telegram Premium</option><option value="telegram_stars">Telegram Stars</option><option value="manual">تحویل دستی</option><option value="external">سرویس خارجی</option></select><input name="title" placeholder="نام نمایشی" required><textarea name="description" placeholder="توضیح کوتاه برای مشتری"></textarea><input name="price_rial" type="number" min="1" placeholder="قیمت به ریال" required><textarea name="configuration" placeholder='تنظیمات JSON؛ مثل {"months":3}'>{}</textarea><input name="cost_cap_nano_ton" type="number" min="1" placeholder="سقف هزینه nanoTON؛ اختیاری"><label class="muted"><input name="is_active" type="checkbox"> همین حالا فعال شود</label><button>ساخت سرویس</button><span id="form-notice"></span></form></div><div class="section"><h2>سرویس‌ها</h2><div style="overflow:auto"><table><thead><tr><th>نام</th><th>قیمت ریال</th><th>نوع</th><th>وضعیت</th><th></th></tr></thead><tbody id="offerings"><tr><td colspan="5" class="muted">در حال بارگذاری…</td></tr></tbody></table></div></div></section>
+    <section class="section"><h2>۵۰ سفارش آخر</h2><div style="overflow:auto"><table><thead><tr><th>شماره</th><th>سرویس</th><th>مقصد</th><th>مبلغ ریال</th><th>وضعیت</th><th>زمان</th></tr></thead><tbody id="orders"><tr><td colspan="6" class="muted">در حال بارگذاری…</td></tr></tbody></table></div></section>
+  </main>
+  <script>
+    const tokenKey='loghmeh-admin-token'; const q=s=>document.querySelector(s); const money=n=>Number(n).toLocaleString('en-US');
+    function token(){return sessionStorage.getItem(tokenKey)||''} function headers(){return {'Authorization':'Bearer '+token(),'Content-Type':'application/json'}}
+    async function api(path, options={}) { const response=await fetch(path,{...options,headers:{...headers(),...(options.headers||{})}}); if(!response.ok){const body=await response.json().catch(()=>({})); throw new Error(body.error||'خطای ناشناخته');} return response.status===204?null:response.json(); }
+    function setRows(node, cells){ node.replaceChildren(...cells.map(values=>{const tr=document.createElement('tr'); values.forEach(value=>{const td=document.createElement('td'); if(value instanceof Node) td.append(value); else td.textContent=value; tr.append(td)}); return tr;})); }
+    async function load(){ const [summary,offerings,orders]=await Promise.all([api('/api/admin/summary'),api('/api/admin/offerings'),api('/api/admin/orders')]); Object.entries(summary).forEach(([key,value])=>q('[data-metric="'+key+'"]').textContent=key==='paid_today_rial'?money(value):value); setRows(q('#offerings'),offerings.map(item=>{const toggle=document.createElement('button'); toggle.className='outline'; toggle.textContent=item.is_active?'غیرفعال کن':'فعال کن'; toggle.onclick=async()=>{await api('/api/admin/offerings/'+item.id+'/toggle',{method:'POST'});load()}; return [item.title,money(item.price_rial),item.kind,item.is_active?'فعال':'غیرفعال',toggle]})); setRows(q('#orders'),orders.map(item=>[item.public_id,item.service_title,item.target_username,money(item.amount_rial),item.status,new Date(item.created_at).toLocaleString('fa-IR')])); }
+    q('#login-form').onsubmit=async event=>{event.preventDefault();sessionStorage.setItem(tokenKey,q('#token').value);try{await load();q('#login').style.display='none'}catch(error){q('#notice').textContent=error.message;sessionStorage.removeItem(tokenKey)}};
+    q('#logout').onclick=()=>{sessionStorage.removeItem(tokenKey);q('#token').value='';q('#login').style.display='grid'};
+    q('#offering-form').onsubmit=async event=>{event.preventDefault();const data=Object.fromEntries(new FormData(event.currentTarget));try{data.price_rial=Number(data.price_rial);data.configuration=JSON.parse(data.configuration||'{}');data.cost_cap_nano_ton=data.cost_cap_nano_ton?Number(data.cost_cap_nano_ton):null;data.is_active=event.currentTarget.is_active.checked;await api('/api/admin/offerings',{method:'POST',body:JSON.stringify(data)});event.currentTarget.reset();q('#form-notice').textContent='سرویس ساخته شد.';q('#form-notice').style.color='var(--accent)';load()}catch(error){q('#form-notice').textContent=error.message;q('#form-notice').style.color='var(--danger)'}};
+    if(token()){load().then(()=>q('#login').style.display='none').catch(()=>sessionStorage.removeItem(tokenKey));}
+  </script>
+</body>
+</html>
+

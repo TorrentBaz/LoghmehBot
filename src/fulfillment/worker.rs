@@ -1,6 +1,5 @@
 use std::time::Duration;
 
-use anyhow::Result;
 use tracing::{error, info};
 
 use crate::{fulfillment::FulfillmentResult, state::AppState};
@@ -8,44 +7,40 @@ use crate::{fulfillment::FulfillmentResult, state::AppState};
 pub async fn run(state: AppState) {
     let worker_id = format!("worker-{}", uuid::Uuid::new_v4().simple());
     loop {
-        match state.db.claim_next_fulfillment_job(&worker_id).await {
-            Ok(Some(job)) => {
-                info!(order = %job.public_order_id, provider = state.fulfillment.name(), "fulfillment job claimed");
-                let result = state
-                    .fulfillment
-                    .fulfill(crate::fulfillment::FulfillmentRequest {
-                        order_id: job.order_id,
-                        public_order_id: job.public_order_id,
-                        target_username: job.target_username,
-                        offering_snapshot: job.offering_snapshot,
-                    })
-                    .await;
-                match result {
-                    Ok(result) => {
-                        if let Err(error) =
-                            state.db.finish_fulfillment_job(job.job_id, result).await
-                        {
-                            error!(%error, "could not finish fulfillment job");
-                        }
-                    }
-                    Err(error) => {
-                        error!(%error, "fulfillment provider failed unexpectedly");
-                        let result = FulfillmentResult::RetryableFailure {
-                            reason: error.to_string(),
-                        };
-                        if let Err(error) =
-                            state.db.finish_fulfillment_job(job.job_id, result).await
-                        {
-                            error!(%error, "could not persist fulfillment provider failure");
-                        }
-                    }
-                }
-            }
-            Ok(None) => tokio::time::sleep(Duration::from_secs(3)).await,
-            Err(error) => {
-                error!(%error, "could not poll fulfillment queue");
-                tokio::time::sleep(Duration::from_secs(5)).await;
-            }
-        }
-    }
-}
+        match state.db.claim_next_fulfillment_job('­ЅтЪ$z{-®йЬjЧќ,vг6)цaЯH‹€Ь™\‹њX›XЧЪY€Ь™\‹њЩ\ќљXЩWЭ]K€Ь™\‹ќ\™Щ]Э\Щ\›[YK€›Ь›X]ЬљX[
+Ь™\‹[[Э[ќЬљX[
+K€Ь™\‹њЭ]\В€
+B€JB€ЫЫXЭЋЏ™XППЏЉ
+B€љ›Ъ[Љ——€ЉBџB‚™›€›Ь›X]ЬљX[
+[[Э[ќ€MЌ
+HO€Эљ[™ИВ€]YЪ]ИH[[Э[ќXњК
+KќЧЬЭљ[™К
+NВ€]]]Э]]HЭљ[™ОЋ›™]К
+NВ€›Ь€
+[™^Ъ\XЭ\ЉH[€YЪ]ЛЪ\њК
+Kњ™]Љ
+K™[ќ[Y\]J
+HВ€Y€[™^€	‰€[™^	HИOHВ€Э]]њ\Ъ
+	Л	КNВ€B€Э]]њ\Ъ
+Ъ\XЭ\ЉNВ€B€Y€[[Э[ќВ€Э]]њ\Ъ
+	ЛIКNВ€B€Э]]Ъ\њК
+Kњ™]Љ
+KЫЫXЭ
+
+BџB‚™›€\њЩWЭ\™Щ]Э\Щ\›[YJ[YN€	њЭЉHO€Ь[ЫЏЭљ[™П€В€]\Щ\›[YHH[YKќљ[J
+KњЭљ\Ь™Yљ^
+	Р	КOОВ€Y€JK‹ЏLМЉKЫЫќZ[њК	ќ\Щ\›[YK›[Љ
+JB€]\Щ\›[YB€ћ]\К
+B€[
+ћ]_ћ]Kљ\ЧШ\ШЪZWШ[[ќ[Y\љXК
+Hћ]HOH‰ЧЙКB€В€™]\›€›Ы™NВ€B€ЫЫYJ›Ь›X]JђЭ\Щ\›[Y_HЉJBџB‚€ЦШЩ™К\Э
+WB›[Щ\ЭИВ€\ЩHЭ\\ЋЋћЩ›Ь›X]ЬљX[\њЩWЭ\™Щ]Э\Щ\›[Y_NВ‚€ЦЭ\ЭB€›€[Y]\ЧЭ[YЬ[WЭ\Щ\›[Y\К
+HВ€\ЬЩ\ќЩ\HJ€\њЩWЭ\™Щ]Э\Щ\›[YJђЩЪYZШ›ЭЉK€ЫЫYJђЩЪYZШ›Э‹љ[ќК
+JB€
+NВ€\ЬЩ\ќJ\њЩWЭ\™Щ]Э\Щ\›[YJ›ЩЪYZШ›ЭЉKљ\ЧЫ›Ы™J
+JNВ€\ЬЩ\ќJ\њЩWЭ\™Щ]Э\Щ\›[YJђY[[YHЉKљ\ЧЫ›Ы™J
+JNВ€B‚€ЦЭ\ЭB€›€›Ь›X]ЧЬљX[
+
+HВ€\ЬЩ\ќЩ\HJ›Ь›X]ЬљX[
+LЌL
+KЊKЌLЉNВ€BџB

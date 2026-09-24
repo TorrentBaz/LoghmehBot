@@ -31,7 +31,6 @@ pub struct ServiceOffering {
 #[derive(Clone, Debug)]
 pub struct UserRecord {
     pub id: Uuid,
-    pub role: String,
 }
 
 #[derive(Clone, Debug)]
@@ -141,7 +140,7 @@ impl Database {
                 SET username = EXCLUDED.username,
                     first_name = EXCLUDED.first_name,
                     role = CASE WHEN users.role = 'admin' THEN 'admin' ELSE EXCLUDED.role END
-            RETURNING id, role
+            RETURNING id
             "#,
         )
         .bind(Uuid::new_v4())
@@ -154,7 +153,6 @@ impl Database {
         .context("could not upsert Telegram user")?;
         Ok(UserRecord {
             id: row.try_get("id")?,
-            role: row.try_get("role")?,
         })
     }
 
@@ -240,7 +238,7 @@ impl Database {
 
         let public_id = format!(
             "LGM-{}",
-            &Uuid::new_v4().simple().to_string()[..12].to_uppercase()
+            Uuid::new_v4().simple().to_string()[..12].to_uppercase()
         );
         let order_id = Uuid::new_v4();
         let snapshot = serde_json::json!({

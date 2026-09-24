@@ -184,10 +184,10 @@ async fn handle_callback(bot: Bot, query: CallbackQuery, state: AppState) -> Han
         return Ok(());
     }
     if let Some(value) = data.strip_prefix("cancel:") {
-        if let Ok(checkout_id) = Uuid::parse_str(value) {
-            if let Err(error) = state.db.cancel_checkout(checkout_id, user.id).await {
-                error!(%error, "could not cancel checkout");
-            }
+        if let Ok(checkout_id) = Uuid::parse_str(value)
+            && let Err(error) = state.db.cancel_checkout(checkout_id, user.id).await
+        {
+            error!(%error, "could not cancel checkout");
         }
         bot.send_message(chat_id, "خرید لغو شد.")
             .reply_markup(main_menu())

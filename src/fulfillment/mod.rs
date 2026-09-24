@@ -151,7 +151,7 @@ impl FulfillmentProvider for ExternalProvider {
             .unwrap_or_else(|| "connector did not include a message".into());
         match payload.status.as_str() {
             "succeeded" => Ok(FulfillmentResult::Succeeded {
-                reference: payload.reference.unwrap_or_else(|| request.public_order_id),
+                reference: payload.reference.unwrap_or(request.public_order_id),
             }),
             "retryable_failure" => Ok(FulfillmentResult::RetryableFailure { reason }),
             "manual_review" => Ok(FulfillmentResult::ManualReview { reason }),

@@ -178,7 +178,7 @@ async fn handle_callback(bot: Bot, query: CallbackQuery, state: AppState) -> Han
                     chat_id,
                     "انتخاب سرویس نامعتبر است. لطفاً دوباره از فهرست انتخاب کن.",
                 )
-                .await?
+                .await?;
             }
         }
         return Ok(());
@@ -320,8 +320,12 @@ async fn show_user_orders(
     state: &AppState,
 ) -> HandlerResult {
     match state.db.list_user_orders(user_id).await {
-        Ok(orders) if orders.is_empty() => bot.send_message(chat_id, "هنوز سفارشی نداری.").await?,
-        Ok(orders) => bot.send_message(chat_id, format_orders(&orders)).await?,
+        Ok(orders) if orders.is_empty() => {
+            bot.send_message(chat_id, "هنوز سفارشی نداری.").await?;
+        }
+        Ok(orders) => {
+            bot.send_message(chat_id, format_orders(&orders)).await?;
+        }
         Err(error) => {
             error!(%error, "could not list customer orders");
             bot.send_message(chat_id, "فعلاً نتوانستم سفارش‌ها را بخوانم.")
@@ -360,9 +364,11 @@ async fn show_admin_orders(bot: &Bot, chat_id: ChatId, state: &AppState) -> Hand
     match state.db.list_recent_orders(10).await {
         Ok(orders) if orders.is_empty() => {
             bot.send_message(chat_id, "هنوز سفارشی ثبت نشده است.")
-                .await?
+                .await?;
         }
-        Ok(orders) => bot.send_message(chat_id, format_orders(&orders)).await?,
+        Ok(orders) => {
+            bot.send_message(chat_id, format_orders(&orders)).await?;
+        }
         Err(error) => {
             error!(%error, "could not get admin orders");
             bot.send_message(chat_id, "فعلاً نتوانستم سفارش‌ها را بخوانم.")

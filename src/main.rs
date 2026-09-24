@@ -53,7 +53,7 @@ async fn main() -> Result<()> {
     info!(address = %config.bind_address, "Loghmeh is running");
 
     let web_server = axum::serve(listener, web::router(state.clone()));
-    let dispatcher = Dispatcher::builder(bot, telegram::schema())
+    let mut dispatcher = Dispatcher::builder(bot, telegram::schema())
         .dependencies(teloxide::dptree::deps![state])
         .enable_ctrlc_handler()
         .build();
